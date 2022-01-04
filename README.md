@@ -3,7 +3,7 @@ This script is a tool to activate the Bootloader of the Itead Sonoff Zigbee 3.0 
 
 Further info how to use this script especially in regard how to reflash the firmware are described in the blog post linked below.
 
- - Not pusblished yet
+ - https://nerdiy.de/en/howto-zigbee-einen-sonoff-zigbee-3-0-usb-dongle-plus-fuer-zigbee2mqtt-vorbereiten/
 
 **You can find more information about zigbee and zigbee2mqtt in the following articles:**
 
