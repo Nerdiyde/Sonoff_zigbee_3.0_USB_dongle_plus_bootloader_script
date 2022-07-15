@@ -3,26 +3,22 @@
 import logging
 # import loggingCfg
 import time
-import os, sys
-
+import os
+import sys
 from threading import Thread
 import queue
-import serial
-import datetime
+import serial                   # to install this dependency execute: pip install pyserial
+import datetime                 # to install this dependency execute: pip install gevent
 import struct
-
 import serial.tools.list_ports
-
 import asyncio
-
 import gevent
-
 import re
 
-###Test Data
+# Test Data
 znp_edScanReq = [0xfe, 5, 0x23, 0x1f, 0x00, 0xf8, 0xff, 0x07, 0x03]
 
-###display setting
+# display setting
 DISPLAY_FORMATE_CFG_HEX_BIT = 1
 DISPLAY_FORMATE_CFG_STR_BIT = 2
 DISPLAY_FORMATE_CFG = DISPLAY_FORMATE_CFG_HEX_BIT | DISPLAY_FORMATE_CFG_STR_BIT
@@ -65,7 +61,7 @@ logger.addHandler(handler)
 def sendDataToSerialPort(sp, data):
     # data.append(fcsCheck(data,1))
 
-    binaryData = struct.pack('B' * len(data), *data);
+    binaryData = struct.pack('B' * len(data), *data)
     wrt = sp.write(binaryData)
     # data.pop()
     # logger.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>{}", decTohexStr(data))
@@ -171,7 +167,7 @@ def uartRx(sp, q):
             # logger.debug(tmpLen)
 
             if sp.isOpen() and tmpLen != 0:
-                # 从串口缓存区读取的数据位 bytes 类型
+                # Data bits read from serial buffer bytes type
                 recv = sp.read(tmpLen)
                 print("recv sp read tmplen ", recv)
                 # cmdData = struct.unpack('B'*(tmpLen),recv)
@@ -239,17 +235,20 @@ def printUartRxData(q):
                     datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
                     bytesToHexString(sendData)))
             elif DISPLAY_FORMATE_CFG == DISPLAY_FORMATE_CFG_STR_BIT:
-                tmpList = splitUartRxStarWithWrap((sendData.decode(encoding="utf-8", errors="ignore")))
+                tmpList = splitUartRxStarWithWrap(
+                    (sendData.decode(encoding="utf-8", errors="ignore")))
                 for info in tmpList:
-                    logger.debug("%s [RX] : %s" % (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), info))
+                    logger.debug("%s [RX] : %s" % (
+                        datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), info))
             else:
                 logger.debug("%s [RX] : %s  %s" % (
-                    datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), bytesToHexString(sendData),
+                    datetime.datetime.now().strftime(
+                        '%Y-%m-%d %H:%M:%S.%f'), bytesToHexString(sendData),
                     sendData.decode(encoding="utf-8", errors="ignore")))
                 break
 
 
-""" 测试mcu进入boot """
+""" Test mcu into boot """
 
 
 def setDTRState(serialPort, state):
@@ -310,13 +309,14 @@ if __name__ == "__main__":
     logger.critical("This is critical")
     logger.error("An error occurred\n")
 
-    # pyinstaller -i butter.ico -F d:/桌面/seven.py
+    # pyinstaller -i butter.ico -F d:/desktop/seven.py
 
     uart_list = [0]
-    uart_refresh()  # 获取已有的串口信息
+    uart_refresh()  # Get the existing serial port information
 
     try:
-        name = input("Select the serial port (just enter the number of the serial port):")
+        name = input(
+            "Select the serial port (just enter the number of the serial port):")
 
         SERIAL_PORT_CFG = {'name': "COM" + name,
                            'baudrate': 115200,
@@ -339,9 +339,10 @@ if __name__ == "__main__":
         logger.error('open ' + SERIAL_PORT_CFG.get('name') + ' is fail!!!!')
         sys.exit(1)
 
-    logger.info(">>>>>>>>>>>>>>>> %s is opened....." % SERIAL_PORT_CFG.get('name'))
+    logger.info(">>>>>>>>>>>>>>>> %s is opened....." %
+                SERIAL_PORT_CFG.get('name'))
 
-    # 启动进入boot
+    # boot into boot
     enterBoot(SP, delay=False)
 
     uartRxDataQueue = queue.Queue(1000)
@@ -357,31 +358,30 @@ if __name__ == "__main__":
     startTime = int(round(time.time() * 1000))
 
     uartTasks = [gevent.spawn(uartTx, SP, uartTxDataQueue)]
-                 
+
     uartTasks = [gevent.spawn(uartTx, SP, uartTxDataQueue),
                  gevent.spawn(uartRx, SP, uartRxDataQueue),
                  gevent.spawn(printUartRxData, uartRxDataQueue)]
-                 
-    gevent.joinall(uartTasks, 5)  # 3秒后关闭所有线程
+
+    gevent.joinall(uartTasks, 5)  # 3 Close all threads after seconds
     logger.info(">>>>>>>>>>>>>>>> end")
-    
-    #    try:          
-    #   
-    #        ser = serial.Serial() 
+
+    #    try:
     #
-    #        gevent.joinall(uartTasks, 3)  # 3秒后关闭所有线程
+    #        ser = serial.Serial()
+    #
+    #        gevent.joinall(uartTasks, 3)  # Close all threads after 3 seconds
     #        logger.info(">>>>>>>>>>>>>>>> end")
     #        if ser.isOpen():
     #          ser.close()
-    #           print("COM:", name, "关闭成功")
+    #           print("COM:", name, "Closed successfully")
     #       if not ser.isOpen():
-    #           print("没有串口打开？")
+    #           print("no serial port open？")
     #   except Exception as error:
-    #       print("COM:", name, "关闭失败")
+    #       print("COM:", name, "Failed to close")
     #
-    #   uart_refresh()  # 获取已有的串口信息
+    #   uart_refresh()  # Get the existing serial port information
     #    print("\n")
-
 
     # while True:
     # data_count = SP.inWaiting()
